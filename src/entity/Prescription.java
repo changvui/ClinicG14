@@ -4,6 +4,8 @@
  */
 package entity;
 
+import java.util.Date;
+
 /**
  *
  * @author user
@@ -13,6 +15,7 @@ public class Prescription {
     private String medicationID;
     private int quantity;
     private String patientID; // Good to have for context
+    private Date approvalDate;
 
     public Prescription(String treatmentID, String patientID, String medicationID, int quantity) {
         this.treatmentID = treatmentID;
@@ -22,8 +25,24 @@ public class Prescription {
     }
 
     // Getters
-    public String getTreatmentID() { return treatmentID; }
-    public String getPatientID() { return patientID; }
-    public String getMedicationID() { return medicationID; }
-    public int getQuantity() { return quantity; }
+    public String getTreatmentID() {
+        return treatmentID; 
+    }
+    public String getPatientID() { 
+        return patientID; 
+    }
+    public String getMedicationID() { 
+        return medicationID; 
+    }
+    public int getQuantity() { 
+        return quantity; 
+    }
+    public Date getApprovalDate() { // **NEW GETTER**
+        return approvalDate;
+    }
+
+    public void setApprovalDate(Date approvalDate) {
+        // Replace the "throw new UnsupportedOperationException..." line with this:
+        this.approvalDate = approvalDate;
+    }
 }

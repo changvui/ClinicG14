@@ -6,6 +6,8 @@ package boundary;
 
 
 import control.*;
+import entity.DispensingReportData;
+import entity.LowStockReportData;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -41,9 +43,11 @@ public class PharmacyUI {
                     case 3 -> doEditMedication();
                     case 4 -> doDeleteMedication();
                     case 5 -> displayLowStockReport();
-                    case 6 -> displayTotalStockValue();
+                    case 6 -> displayDispensingReport();
+                    case 7 -> displayAllQueuedPrescriptions();
                     case 8 -> doReviewPendingPrescriptions();
                     case 9 -> doManageHeldPrescriptions();
+                    case 10 -> displayApprovedHistory();
                     case 0 -> System.out.println("\nReturning to Main Menu...");
                     default -> System.out.println("\nInvalid choice. Please try again.");
                 }
@@ -94,16 +98,20 @@ public class PharmacyUI {
         System.out.println();
         System.out.printf(itemFormat, 5, "Generate Low Stock Report");
         System.out.println();
-        System.out.printf(itemFormat, 6, "Generate Total Stock Value Report");
+        System.out.printf(itemFormat, 6, "Monthly Dispensing Summary");
         System.out.println();
         System.out.println(separator);
 
         // Prescription Workflow section
         System.out.printf(headerFormat, "Prescription Workflow");
         System.out.println();
+        System.out.printf(itemFormat, 7, "List All Queued Prescriptions");
+        System.out.println();
         System.out.printf(itemFormat, 8, "Review Pending Prescriptions");
         System.out.println();
         System.out.printf(itemFormat, 9, "Manage Held Prescriptions");
+        System.out.println();
+        System.out.printf(itemFormat, 10, "View Approved Prescription History");
         System.out.println();
         System.out.println(separator);
 
@@ -385,115 +393,61 @@ public class PharmacyUI {
      private void displayLowStockReport() {
         System.out.println("\n--- Low Stock Report ---");
         System.out.print("Enter stock threshold (e.g., 50): ");
-        int threshold = 50; // Default value
+        int threshold = 50;
         try {
             threshold = scanner.nextInt();
             scanner.nextLine();
-            if (threshold <= 0) {
-                System.out.println("Threshold must be positive. Using default of 50.");
-                threshold = 50;
-            }
         } catch (InputMismatchException e) {
             scanner.nextLine();
             System.out.println("Invalid input. Using default threshold of 50.");
         }
 
-        System.out.println("\nHow would you like to view the report?");
-        System.out.println("  1. Table View");
-        System.out.println("  2. Chart View");
-        System.out.print("Enter your choice (1-2): ");
-        int choice = 1;
-        try {
-            choice = scanner.nextInt();
-            scanner.nextLine();
-        } catch (InputMismatchException e) {
-            scanner.nextLine();
-            System.out.println("Invalid choice. Defaulting to Table View.");
+        // 1. Get the complete, processed data package from the control layer.
+        LowStockReportData reportData = pharmacyControl.generateFullLowStockReport(threshold);
+        if (reportData == null) {
+            System.out.println("\nNo medications are below the threshold of " + threshold + ".");
+            return;
         }
 
-        if (choice == 2) {
-            final int TOP_N_COUNT = 10;
-            String[][] chartData = pharmacyControl.getTopNLowStockDataForChart(threshold, TOP_N_COUNT);
-            if (chartData.length == 0) {
-                System.out.println("\nNo medications are below the threshold of " + threshold + ".");
-            } else {
-                // **THE FIX:** Pass the 'threshold' as the Y-axis height.
-                drawBarChart("Top " + chartData.length + " Low Stock Medications", chartData, "Medications", threshold);
-            }
-        } else {
-            // Table view logic remains the same
-            String[][] lowStockData = pharmacyControl.getLowStockReportForDisplay(threshold);
-            if (lowStockData.length == 0) {
-                System.out.println("\nNo medications are below the threshold of " + threshold + ".");
-            } else {
-                System.out.println("\nDisplaying all " + lowStockData.length + " medications with stock below " + threshold + ":");
-                printMedicationTable(lowStockData);
-            }
-        }
-    }
-     
-     
-      /**
-     * **NEW HELPER METHOD**
-     * This method takes a title and data, and renders a text-based bar chart in the console.
-     * @param title The title to be displayed above the chart.
-     * @param data A 2D String array where each inner array is [label, value].
-     */
-     private void drawBarChart(String title, String[][] data, String xAxisLabel, int yAxisHeight) {
-        // --- Configuration ---
-        final String BAR_CHAR = "*";
-
-        System.out.println("\n" + ANSI_YELLOW + title + " (Threshold: " + yAxisHeight + ")" + ANSI_RESET);
-        System.out.println("   ^"); // Y-axis arrow
-
-        // --- Determine the dynamic width for each column ---
-        int columnWidth = String.valueOf(data.length).length() + 2;
-        columnWidth = Math.max(5, columnWidth);
-
-        // --- Draw the chart body using the dynamic Y-axis height ---
-        for (int y = yAxisHeight; y >= 1; y--) {
-            // Adjust the Y-axis step for taller charts to keep them compact
-            if (yAxisHeight > 20 && y % 2 != 0 && y != 1) {
-                continue; // Skip odd numbers for a cleaner look on tall charts
-            }
-            
-            System.out.printf("%3d |", y);
-            for (String[] row : data) {
-                int value = Integer.parseInt(row[1]);
-                String barSegment = (value >= y) ? BAR_CHAR.repeat(columnWidth - 2) : "";
-                System.out.print(" " + ANSI_GREEN + centerTextForBarChart(barSegment, columnWidth - 2) + ANSI_RESET + " ");
-            }
-            System.out.println();
-        }
-
-        // --- Draw the X-axis line ---
-        System.out.print("---+" + "-".repeat(columnWidth * data.length));
-        System.out.println("-> " + xAxisLabel);
-
-        // --- Draw the numbered legend labels ---
-        System.out.print("    "); // Alignment space
-        for (int i = 0; i < data.length; i++) {
-            System.out.print(centerTextForBarChart(String.valueOf(i + 1), columnWidth));
-        }
-        System.out.println("\n");
-
-        // --- Print the legend itself ---
-        System.out.println("Legend:");
-        for (int i = 0; i < data.length; i++) {
-            System.out.printf("  %d. %s (Qty: %s)\n", (i + 1), data[i][0], data[i][1]);
-        }
-    }
-    
-    private String centerTextForBarChart(String text, int width) {
+        // --- 2. Print the Formatted Report Header ---
+        System.out.println("\n========================================================================================");
+        System.out.println("                      TUNKU ABDUL RAHMAN UNIVERSITY OF MANAGEMENT AND TECHNOLOGY");
+        System.out.println("                                   PHARMACY MODULE SUBSYSTEM");
+        System.out.println("\nGenerated at: " + new java.util.Date());
+        System.out.println("\n----------------------------------------------------------------------------------------");
+        System.out.println("                       SUMMARY OF LOW STOCK REPORT (Threshold: " + threshold + ")");
+        System.out.println("****************************************************************************************");
         
-        if (text.length() >= width) {
-            return text.substring(0, width);
-        }
-        int padding = width - text.length();
-        int leftPadding = padding / 2;
-        int rightPadding = padding - leftPadding;
-        return " ".repeat(leftPadding) + text + " ".repeat(rightPadding);
+        // --- 3. Print the Main Data Table ---
+        System.out.println("\nMedication Details (All items with stock < " + threshold + "):");
+        printMedicationTable(reportData.getTableData()); // Reuse the existing table printer
+
+        // --- 4. Print the Summary Statistics ---
+        System.out.println("\nTotal Number of Low Stock Items: " + reportData.getTotalItemsLow());
+
+        // --- 5. Print the Graphical Representation ---
+        System.out.println("\n----------------------------------------------------------------------------------------");
+        System.out.println("                             GRAPHICAL REPRESENTATION OF LOWEST STOCK");
+        System.out.println("----------------------------------------------------------------------------------------");
+        
+        drawBarChart("Top " + reportData.getChartData().length + " Medications with Lowest Stock", reportData.getChartData(), "Medications", threshold);
+        
+        // --- 6. Print the Insights ---
+        System.out.println("\n----------------------------------------------------------------------------------------");
+        System.out.println("                                  INSIGHTS AND SUMMARY");
+        System.out.println("----------------------------------------------------------------------------------------");
+        System.out.println("Most Critical Item (Lowest Stock): \n< " + reportData.getLowestStockItem() + " >");
+        System.out.println("\nHighest Stock Item in this Report: \n< " + reportData.getHighestStockItemInReport() + " >");
+        
+        // --- 7. Print the Footer ---
+        System.out.println("\n****************************************************************************************");
+        System.out.println("                                     END OF THE REPORT");
+        System.out.println("========================================================================================");
     }
+      
+     
+    
+   
     
     
      
@@ -534,12 +488,143 @@ public class PharmacyUI {
         // --- Print the Footer ---
         System.out.println(separator);
     }
+     
+//Monthly Dispensing Summary
+    private void displayDispensingReport() {
+        System.out.println("\n--- Monthly Medication Dispensing Summary ---");
+        System.out.print("Enter month to generate report for (1-12): ");
+        int month = scanner.nextInt();
+        System.out.print("Enter year (e.g., 2025): ");
+        int year = scanner.nextInt();
+        scanner.nextLine();
 
-    private void displayTotalStockValue() {
-        System.out.println("\n--- Total Stock Value Report ---");
-        double totalValue = pharmacyControl.generateTotalStockValueReport();
-        System.out.printf("The total value of all medication in stock is: RM %.2f\n", totalValue);
+        if (month < 1 || month > 12) {
+            System.out.println("Invalid month.");
+            return;
+        }
+
+        // 1. Get the complete, processed data package from the control layer.
+        DispensingReportData reportData = pharmacyControl.generateFullDispensingReport(month, year);
+        if (reportData == null) {
+            System.out.println("\nNo dispensing records found for the selected period.");
+            return;
+        }
+
+        // --- 2. Print the Formatted Report Header ---
+        System.out.println("\n========================================================================================");
+        System.out.println("                      TUNKU ABDUL RAHMAN UNIVERSITY OF MANAGEMENT AND TECHNOLOGY");
+        System.out.println("                                   PHARMACY MODULE SUBSYSTEM");
+        System.out.println("\nGenerated at: " + new java.util.Date());
+        System.out.println("\n----------------------------------------------------------------------------------------");
+        System.out.println("                       SUMMARY OF DISPENSING REPORT (" + month + "/" + year + ")");
+        System.out.println("****************************************************************************************");
+
+        // --- 3. Print the Main Data Table ---
+        System.out.println("\nMedication Details:");
+        System.out.printf("%-12s | %-25s | %-12s | %-15s | %s\n", "Med ID", "Name", "Unit Price", "Times Dispensed", "Total Qty Dispensed");
+        System.out.println("-".repeat(95));
+        // Use the getter to retrieve the table data
+        for (String[] row : reportData.getTableData()) {
+            System.out.printf("| %-10s | %-25s | %-12s | %-15s | %s\n", row[0], row[1], row[4], row[2], row[3]);
+        }
+        System.out.println("-".repeat(95));
+        
+        // --- 4. Print the Summary Statistics ---
+        System.out.println("\nTotal Unique Medications Dispensed: " + reportData.getTotalUniqueMeds());
+        System.out.println("Total Quantity of All Items Dispensed: " + reportData.getTotalQtyDispensed());
+
+        // --- 5. Print the Graphical Representation ---
+        System.out.println("\n----------------------------------------------------------------------------------------");
+        System.out.println("                             GRAPHICAL REPRESENTATION OF DISPENSING");
+        System.out.println("----------------------------------------------------------------------------------------");
+        
+        // Use the getter to retrieve the data for the first chart
+        drawBarChart("Top 5 Most Dispensed (by Quantity)", reportData.getTopDispensedByQtyChartData(), "Medications", 0);
+        
+        // Use the getter to retrieve the data for the second chart
+        drawBarChart("Top 5 Most Frequent Medication Types", reportData.getTopDispensedByTypeChartData(), "Types", 0);
+        
+        // --- 6. Print the Insights ---
+        System.out.println("\n----------------------------------------------------------------------------------------");
+        System.out.println("                                  INSIGHTS AND SUMMARY");
+        System.out.println("----------------------------------------------------------------------------------------");
+        System.out.println("Medication with the HIGHEST demand: \n< " + reportData.getHighestDemandMedication() + " >");
+        System.out.println("\nMost prescribed Medication Type: \n< " + reportData.getMostPrescribedType() + " >");
+        
+        // --- 7. Print the Footer ---
+        System.out.println("\n****************************************************************************************");
+        System.out.println("                                     END OF THE REPORT");
+        System.out.println("========================================================================================");
     }
+    
+    // The drawBarChart method needs the dynamic Y-axis calculation
+     private void drawBarChart(String title, String[][] data, String xAxisLabel, int yAxisHeight) {
+        if (data.length == 0) return;
+
+        // --- Configuration ---
+        final String BAR_CHAR = "*";
+        
+        System.out.println("\n" + ANSI_YELLOW + title + ANSI_RESET);
+
+        // --- Step 1: Determine Y-axis height if it's not provided ---
+        if (yAxisHeight <= 0) {
+            int maxValue = 0;
+            for (String[] row : data) {
+                try {
+                    int value = Integer.parseInt(row[1]);
+                    if (value > maxValue) maxValue = value;
+                } catch (NumberFormatException e) {}
+            }
+            yAxisHeight = (int) (Math.ceil(maxValue / 5.0) * 5);
+            if (yAxisHeight == 0) yAxisHeight = 5;
+        }
+
+        // --- Step 2: Determine dynamic column width ---
+        int columnWidth = String.valueOf(data.length).length() + 2;
+        columnWidth = Math.max(7, columnWidth); // Min width for aesthetics
+
+        // --- Step 3: Draw the chart body ---
+        System.out.println("   ^");
+        for (int y = yAxisHeight; y >= 1; y--) {
+             if (yAxisHeight > 20 && y % 2 != 0 && y != 1) continue;
+            System.out.printf("%3d |", y);
+            for (String[] row : data) {
+                int value = Integer.parseInt(row[1]);
+                String barSegment = (value >= y) ? BAR_CHAR.repeat(columnWidth - 2) : "";
+                System.out.print(" " + ANSI_GREEN + centerText(barSegment, columnWidth - 2) + ANSI_RESET + " ");
+            }
+            System.out.println();
+        }
+
+        // --- Step 4: Draw the X-axis line ---
+        System.out.print("---+" + "-".repeat(columnWidth * data.length));
+        System.out.println("-> " + xAxisLabel);
+
+        // --- Step 5: Draw the numbered legend labels ---
+        System.out.print("    ");
+        for (int i = 0; i < data.length; i++) {
+            System.out.print(centerText(String.valueOf(i + 1), columnWidth));
+        }
+        System.out.println("\n");
+
+        // --- Step 6: Print the legend ---
+        System.out.println("Legend:");
+        for (int i = 0; i < data.length; i++) {
+            System.out.printf("  %d. %s (Value: %s)\n", (i + 1), data[i][0], data[i][1]);
+        }
+    }
+     
+     private String centerText(String text, int width) {
+        if (text.length() >= width) {
+            return text.substring(0, width);
+        }
+        int padding = width - text.length();
+        int leftPadding = padding / 2;
+        int rightPadding = padding - leftPadding;
+        return " ".repeat(leftPadding) + text + " ".repeat(rightPadding);
+    }
+    
+    
     
     private String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) {
@@ -549,7 +634,38 @@ public class PharmacyUI {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
     
-    // **NEW UI METHOD FOR APPROVALS**
+    
+    //UI Display consolidated list of all prescriptions they are pending or on hold, along with their current status.
+    private void displayAllQueuedPrescriptions() {
+        System.out.println("\n--- All Queued Prescriptions (Pending & Held) ---");
+        
+        // 1. Get the combined data from the control layer.
+        String[][] queuedData = pharmacyControl.getAllQueuedPrescriptionsForDisplay();
+
+        if (queuedData.length == 0) {
+            System.out.println("There are currently no prescriptions in the queue.");
+            return;
+        }
+
+        // 2. Print a formatted table.
+        String formatString = "| %-12s | %-12s | %-15s | %-8s | %-10s |";
+        int totalWidth = 12 + 12 + 15 + 8 + 10 + 16;
+        String separator = "-".repeat(totalWidth);
+        
+        System.out.println(separator);
+        System.out.printf(formatString, "Treatment ID", "Patient ID", "Medication ID", "Quantity", "Status");
+        System.out.println();
+        System.out.println(separator);
+        
+        for (String[] row : queuedData) {
+            System.out.printf(formatString, row[0], row[1], row[2], row[3], row[4]);
+            System.out.println();
+        }
+        System.out.println(separator);
+    }
+    
+    
+    //  UI METHOD FOR APPROVALS**
     private void doReviewPendingPrescriptions() {
         System.out.println("\n--- Review Pending Prescriptions ---");
         while(true) {
@@ -566,8 +682,15 @@ public class PharmacyUI {
             System.out.println("  Qty Required: " + p[4]);
             System.out.println("  Stock on Hand:" + p[5]);
             System.out.print("\nChoose an action: (1-Approve, 2-Decline, 0-Stop Reviewing): ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+             int choice = -1;
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+            } catch (InputMismatchException e) {
+                scanner.nextLine(); // Clear bad input
+                System.out.println("Invalid input. Please enter a number.");
+                continue; // Skip to the next loop iteration
+            }
 
             String result = "";
             if (choice == 1) {
@@ -615,6 +738,35 @@ public class PharmacyUI {
             result = "Invalid action choice.";
         }
         System.out.println("Result: " + result);
+    }
+    
+    //Displays a clean, chronological log of all approved prescriptions.
+    private void displayApprovedHistory() {
+        System.out.println("\n--- Approved Prescription History (Most Recent First) ---");
+        
+        // 1. Get the processed data from the control layer.
+        String[][] historyData = pharmacyControl.getApprovedHistoryForDisplay();
+
+        if (historyData.length == 0) {
+            System.out.println("There is no approved prescription history.");
+            return;
+        }
+
+        // 2. Print a formatted table.
+        String formatString = "| %-12s | %-10s | %-10s | %-25s | %-8s | %-20s |";
+        int totalWidth = 12 + 10 + 10 + 25 + 8 + 20 + 19;
+        String separator = "-".repeat(totalWidth);
+        
+        System.out.println(separator);
+        System.out.printf(formatString, "Treatment ID", "Patient ID", "Med ID", "Medication Name", "Quantity", "Approval Time");
+        System.out.println();
+        System.out.println(separator);
+        
+        for (String[] row : historyData) {
+            System.out.printf(formatString, row[0], row[1], row[2], row[3], row[4], row[5]);
+            System.out.println();
+        }
+        System.out.println(separator);
     }
     
 }
