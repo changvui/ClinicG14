@@ -31,6 +31,7 @@ public class MainControl {
         ClinicInitializer.initializeSampleDiagnoses(medicalTreatmentControl);
         ClinicInitializer.initializeSamplePatients(patientManager);
         ClinicInitializer.initializeSampleConsultations(consultationManager,doctorManager,patientManager);
+        ClinicInitializer.initializeSamplePrescriptionHistory(medicalTreatmentControl, pharmacyControl);
         System.out.println("All sample data loaded successfully!");
         
         // 3. Create the main UI, passing the control objects to it

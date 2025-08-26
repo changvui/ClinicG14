@@ -6,6 +6,9 @@ import entity.*;
 import java.util.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Calendar;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 /**
  *
  * @author user
@@ -237,6 +240,106 @@ public class ClinicInitializer {
         
         // And pass the complete object to the control layer's new method
         pharmacyControl.addMedication(medication);
+    }
+    
+     public static void initializeSamplePrescriptionHistory(MedicalTreatmentControl treatmentControl, PharmacyControl pharmacyControl) {
+        System.out.println("Simulating a large, hardcoded prescription history for Jan-Aug 2025...");
+        try {
+            // --- Data pools for creating realistic, random history ---
+            String[] patientIDs = {"P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", "P010"};
+            String[] doctorIDs = {"D101", "D201", "D301", "D401", "D501", "D102", "D202", "D302"};
+            String[] diagnosisTemplateIDs = {"DIAG01", "DIAG02", "DIAG03", "DIAG04", "DIAG05", "DIAG06"};
+            String[] sickTypes = {"Acute", "Chronic", "Follow-up"};
+            String[] medicationIDs = pharmacyControl.getAllMedicationIDsForTesting();
+            Random rand = new Random();
+            int year = 2025;
+
+            // --- Hardcode 25 approved prescriptions for JANUARY 2025 ---
+            for (int i = 0; i < 25; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JANUARY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+
+            // --- Hardcode 20 approved prescriptions for FEBRUARY 2025 ---
+            for (int i = 0; i < 20; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.FEBRUARY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+            // --- Hardcode 28 approved prescriptions for MARCH 2025 ---
+            for (int i = 0; i < 28; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.MARCH, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+
+            // --- Hardcode 23 approved prescriptions for APRIL 2025 ---
+            for (int i = 0; i < 23; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.APRIL, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+            // --- Hardcode 26 approved prescriptions for MAY 2025 ---
+            for (int i = 0; i < 26; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.MAY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+
+            // --- Hardcode 21 approved prescriptions for JUNE 2025 ---
+            for (int i = 0; i < 21; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JUNE, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+            // --- Hardcode 24 approved prescriptions for JULY 2025 ---
+            for (int i = 0; i < 24; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JULY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+            // --- Hardcode 22 approved prescriptions for AUGUST 2025 ---
+            for (int i = 0; i < 22; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.AUGUST, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+
+            // --- Add one case that gets put on hold for testing ---
+            treatmentControl.createTreatment("P005", "D401", "Recurring severe headaches.", "Chronic", "DIAG05", "M007", 500);
+            pharmacyControl.approveNextPrescription(); // This will fail due to low stock and be held
+
+            System.out.println("Prescription history simulation complete. Over 180 historical records created.");
+
+        } catch (Exception e) {
+            System.err.println("An error occurred during history simulation: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+     private static void createAndApproveRandomTreatment(MedicalTreatmentControl treatmentControl, PharmacyControl pharmacyControl,
+                                                         int year, int month, Random rand, String[] patientIDs,
+                                                         String[] doctorIDs, String[] diagnosisTemplateIDs,
+                                                         String[] sickTypes, String[] medicationIDs) {
+        // --- Create random data ---
+        String patientID = patientIDs[rand.nextInt(patientIDs.length)];
+        String doctorID = doctorIDs[rand.nextInt(doctorIDs.length)];
+        String templateID = diagnosisTemplateIDs[rand.nextInt(diagnosisTemplateIDs.length)];
+        String sickType = sickTypes[rand.nextInt(sickTypes.length)];
+        String medID = medicationIDs[rand.nextInt(medicationIDs.length)];
+        int quantity = rand.nextInt(20) + 5;
+
+        // --- Create a random date within the specified month ---
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month, 1);
+        int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int randomDay = rand.nextInt(maxDay) + 1;
+        cal.set(Calendar.DAY_OF_MONTH, randomDay);
+        Date specificDate = cal.getTime();
+
+        // --- Execute the creation and approval ---
+        treatmentControl.createTreatment(patientID, doctorID, "Patient symptoms recorded.", sickType, templateID, medID, quantity);
+        approveWithSpecificDate(pharmacyControl, specificDate);
+    }
+   
+    
+     
+    
+     private static void approveWithSpecificDate(PharmacyControl pharmacyControl, Date specificDate) {
+        Prescription p = pharmacyControl.getPendingPrescriptionsForTesting().getFront();
+        if (p == null) return;
+
+        p.setApprovalDate(specificDate);
+        pharmacyControl.approveNextPrescription();
     }
     
     public static void initializeSampleDiagnoses(MedicalTreatmentControl treatmentControl) {
