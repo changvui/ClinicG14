@@ -1,6 +1,8 @@
 package boundary;
 
+import adt.QueueInterface;
 import control.MedicalTreatmentControl;
+import entity.MedicalTreatment;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -19,15 +21,21 @@ public class MedicalTreatmentUI {
     public void runModule() {
         int choice;
         do {
-            System.out.println("\n--- Medical Treatment & Diagnosis Module ---");
-            System.out.println("1. Create New Medical Treatment");
-            System.out.println("2. View Treatment History");
-            System.out.println("3. Update a Treatment Record");
-            System.out.println("4. Delete a Treatment Record");
-            System.out.println("0. Return to Main Menu");
+            System.out.println("\n|-------------------------------------------------|");
+            System.out.println("|       MEDICAL TREATMENT & DIAGNOSIS MODULE      |");
+            System.out.println("|-------------------------------------------------|");
+            System.out.println("| 1. Create New Medical Treatment                 |");
+            System.out.println("| 2. View All Treatment History                   |");
+            System.out.println("| 3. Update a Treatment Record                    |");
+            System.out.println("| 4. Delete a Treatment Record                    |");
+            System.out.println("| 5. Search Treatments by Patient ID              |");
+            System.out.println("| 6. Generate Reports Menu                        |");
+            System.out.println("| 0. Return to Main Menu                          |");
+            System.out.println("|-------------------------------------------------|");
             System.out.print("Enter your choice: ");
 
             try {
+                // Use nextLine() for all input to be safe
                 choice = Integer.parseInt(scanner.nextLine());
 
                 switch (choice) {
@@ -35,12 +43,15 @@ public class MedicalTreatmentUI {
                     case 2 -> doViewHistory();
                     case 3 -> doUpdateTreatment();
                     case 4 -> doDeleteTreatment();
+                    // **NEW CASES ADDED**
+                    case 5 -> searchTreatmentByPatientId();
+                    case 6 -> generateReportsMenu();
                     case 0 -> System.out.println("Returning to main menu...");
                     default -> System.out.println("Invalid choice.");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a number.");
-                choice = -1;
+                choice = -1; // Set to a non-zero value to continue the loop
             }
         } while (choice != 0);
     }
@@ -260,4 +271,82 @@ private String[] wrapText(String text, int width) {
 
     return lines.toArray(new String[0]);
 }
+
+// NEW: Reports Menu
+    private void generateReportsMenu() {
+        int choice;
+        do {
+            System.out.println("\n|-------------------------------------------------|");
+            System.out.println("|              GENERATE REPORTS MENU              |");
+            System.out.println("|-------------------------------------------------|");
+            System.out.println("| 1. Generate Patient Treatment History Report    |");
+            System.out.println("| 2. Generate Medical Clinic Summary Report       |");
+            System.out.println("| 0. Return to Treatment Menu                     |");
+            System.out.println("|-------------------------------------------------|");
+            System.out.print("Enter your choice: ");
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+                switch (choice) {
+                    case 1 -> generatePatientHistoryReport();
+                    case 2 -> generateClinicSummaryReport();
+                    case 0 -> System.out.println("Returning to previous menu...");
+                    default -> System.out.println("Invalid choice.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                choice = -1;
+            }
+        } while (choice != 0);
+    }
+
+    private void generatePatientHistoryReport() {
+        System.out.println("\n--- Generate Patient History Report ---");
+        System.out.print("Enter Patient ID for the report: ");
+        String patientID = scanner.nextLine().toUpperCase();
+        String report = medicalTreatmentControl.generatePatientHistoryReport(patientID);
+        System.out.println(report);
+    }
+
+    private void generateClinicSummaryReport() {
+        System.out.println("\n--- Generating Clinic Summary Report ---");
+        String report = medicalTreatmentControl.generateClinicSummaryReport();
+        System.out.println(report);
+    }
+    
+    private void searchTreatmentByPatientId() {
+        System.out.print("Enter Patient ID to search: ");
+        String patientId = scanner.nextLine().toUpperCase();
+        QueueInterface<MedicalTreatment> found = medicalTreatmentControl.searchTreatmentByPatientId(patientId);
+        if (found.isEmpty()) {
+            System.out.println("No treatments found for Patient ID: " + patientId);
+            return;
+        }
+        int count = found.size();
+        MedicalTreatment[] results = new MedicalTreatment[count];
+        for (int i = 0; i < count && !found.isEmpty(); i++) {
+            results[i] = found.dequeue();
+        }
+        System.out.println("\n--- Search Results for Patient ID: " + patientId + " ---");
+        System.out.printf("%-12s | %-10s | %-10s | %-20s | %-42s | %-12s | %-5s | %-50s\n",
+                "TreatmentID", "PatientID", "DoctorID", "Sickness", "Diagnosis", "Medication", "Qty", "Date");
+        System.out.println(new String(new char[170]).replace('\0', '-'));
+        for (MedicalTreatment t : results) {
+            String[] wrappedSickness = wrapText(t.getPatientSicknessDescription(), 20);
+            String[] wrappedDiagnosis = wrapText(t.getDiagnosisDescription(), 40);
+            int maxLines = Math.max(wrappedSickness.length, wrappedDiagnosis.length);
+            for (int i = 0; i < maxLines; i++) {
+                System.out.printf("%-12s | %-10s | %-10s | %-20s | %-42s | %-12s | %-5s | %-50s\n",
+                        i == 0 ? t.getTreatmentID() : "",
+                        i == 0 ? t.getPatientID() : "",
+                        i == 0 ? t.getDoctorID() : "",
+                        i < wrappedSickness.length ? wrappedSickness[i] : "",
+                        i < wrappedDiagnosis.length ? wrappedDiagnosis[i] : "",
+                        i == 0 ? t.getMedicationID() : "",
+                        i == 0 ? String.valueOf(t.getDispensedQuantity()) : "",
+                        i == 0 ? t.getCreatedDate().toString() : "");
+            }
+            System.out.println(new String(new char[170]).replace('\0', '-'));
+        }
+    }
+
 }

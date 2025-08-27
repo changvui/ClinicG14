@@ -19,8 +19,8 @@ public class MainControl {
         // 1. Create all control-layer managers
         DoctorManager doctorManager = new DoctorManager();
         PharmacyControl pharmacyControl = new PharmacyControl();
-        MedicalTreatmentControl medicalTreatmentControl = new MedicalTreatmentControl(pharmacyControl);
         PatientManager patientManager = new PatientManager();
+         MedicalTreatmentControl medicalTreatmentControl = new MedicalTreatmentControl(pharmacyControl); 
         ConsultationManager consultationManager = new ConsultationManager();
         // As you add more modules, you would create their control objects here.
 

@@ -154,4 +154,218 @@ public class MedicalTreatmentControl {
         }
         return null;
     }
+    
+    // --- SEARCH BY PATIENT ID ---
+    public QueueInterface<MedicalTreatment> searchTreatmentByPatientId(String patientId) {
+        QueueInterface<MedicalTreatment> result = new LinkedQueue<>();
+
+        // Convert queue to array for iteration
+        MedicalTreatment[] historyArray = new MedicalTreatment[treatmentHistory.size()];
+        historyArray = treatmentHistory.toArray(historyArray);
+
+        for (MedicalTreatment t : historyArray) {
+            if (t.getPatientID().equalsIgnoreCase(patientId)) {
+                result.enqueue(t);   // add to custom queue instead of ArrayList
+            }
+        }
+        return result;
+    }
+    
+    public String generatePatientHistoryReport(String patientID) {
+        QueueInterface<MedicalTreatment> treatments = searchTreatmentByPatientId(patientID);
+        
+        if (treatments.isEmpty()) {
+            // We can't confirm if the patient exists, only if they have history.
+            return "No treatment history found for patient ID: " + patientID;
+        }
+
+        StringBuilder report = new StringBuilder();
+        MedicalTreatment[] treatmentArray = treatments.toArray(new MedicalTreatment[0]);
+
+        report.append("\n====================================================\n");
+        report.append("           PATIENT TREATMENT HISTORY REPORT         \n");
+        report.append("====================================================\n");
+        report.append(String.format("Patient ID: %s\n", patientID));
+        report.append(String.format("Total Treatments: %d\n", treatmentArray.length));
+        report.append(String.format("Report Generated: %s\n", new Date()));
+        report.append("----------------------------------------------------\n\n");
+
+        for (MedicalTreatment t : treatmentArray) {
+            report.append(String.format("Treatment ID: %s   Date: %s\n", t.getTreatmentID(), t.getCreatedDate()));
+            report.append(String.format("  Doctor ID: %s\n", t.getDoctorID()));
+            report.append(String.format("  Sickness:  %s\n", t.getPatientSicknessDescription()));
+            report.append(String.format("  Diagnosis: %s\n", t.getDiagnosisDescription()));
+            report.append(String.format("  Prescribed: %s (Qty: %d)\n", t.getMedicationID(), t.getDispensedQuantity()));
+            report.append("----------------------------------------------------\n");
+        }
+        report.append("                       END OF REPORT                  \n");
+        report.append("====================================================\n");
+
+        return report.toString();
+    }
+
+// NEW: Compact histogram generator for perfect formatting
+// SIMPLER FIX: Just adjust the string formatting
+private String generateCompactHistogram(int[] values, String[] labels) {
+    StringBuilder histogram = new StringBuilder();
+    
+    if (values.length == 0 || values.length != labels.length) {
+        return "No data available for histogram";
+    }
+    
+    // Find maximum value for scaling
+    int maxValue = 0;
+    for (int value : values) {
+        if (value > maxValue) maxValue = value;
+    }
+    
+    if (maxValue == 0) {
+        return "No data available for histogram";
+    }
+    
+    // Scale to fit within the report width
+    final int MAX_WIDTH = 30;
+    
+    for (int i = 0; i < values.length; i++) {
+        int barLength = maxValue > 0 ? (int) ((double) values[i] / maxValue * MAX_WIDTH) : 0;
+        String bar = new String(new char[barLength]).replace('\0', '*');
+        
+        // CHANGED: Adjusted formatting to match header width
+        histogram.append(String.format("%-10s | %-30s | %3d\n", 
+            labels[i], bar, values[i]));
+    }
+    
+    return histogram.toString();
+}
+
+// Helper method for text truncation
+private String truncateText(String text, int maxLength) {
+    if (text == null) return "";
+    if (text.length() <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + "...";
+}
+     public String generateClinicSummaryReport() {
+    StringBuilder report = new StringBuilder();
+    report.append("====================================================\n");
+    report.append("           MEDICAL CLINIC SUMMARY REPORT            \n");
+    report.append("====================================================\n");
+    report.append(String.format("Report Generated: %s\n\n", new Date()));
+
+    report.append("----------------------------------------------------\n");
+    report.append("                Overall Statistics                  \n");
+    report.append("----------------------------------------------------\n");
+    report.append(String.format("Total Treatments: %d\n", treatmentHistory.size()));
+
+    // Use temporary arrays for counting and sorting
+    MedicalTreatment[] historyArray = new MedicalTreatment[treatmentHistory.size()];
+    historyArray = treatmentHistory.toArray(historyArray);
+
+    String[] diagnosisIDs = new String[historyArray.length];
+    int[] diagnosisCounts = new int[historyArray.length];
+    int uniqueDiagnosisCount = 0;
+
+    for (MedicalTreatment t : historyArray) {
+        // Count diagnosis occurrences
+        String diagnosisId = t.getDiagnosisID();
+        boolean foundDiagnosis = false;
+        for (int i = 0; i < uniqueDiagnosisCount; i++) {
+            if (diagnosisIDs[i].equals(diagnosisId)) {
+                diagnosisCounts[i]++;
+                foundDiagnosis = true;
+                break;
+            }
+        }
+        if (!foundDiagnosis) {
+            diagnosisIDs[uniqueDiagnosisCount] = diagnosisId;
+            diagnosisCounts[uniqueDiagnosisCount] = 1;
+            uniqueDiagnosisCount++;
+        }
+    }
+    
+    // Sort and report Top 5 Most Common Diagnoses
+    report.append("\n----------------------------------------------------\n");
+    report.append("             Top 5 Most Common Diagnoses            \n");
+    report.append("----------------------------------------------------\n");
+    
+    // Manual Bubble Sort for Diagnoses
+    for (int i = 0; i < uniqueDiagnosisCount - 1; i++) {
+        for (int j = 0; j < uniqueDiagnosisCount - i - 1; j++) {
+            if (diagnosisCounts[j] < diagnosisCounts[j + 1]) {
+                int tempCount = diagnosisCounts[j];
+                diagnosisCounts[j] = diagnosisCounts[j + 1];
+                diagnosisCounts[j + 1] = tempCount;
+
+                String tempId = diagnosisIDs[j];
+                diagnosisIDs[j] = diagnosisIDs[j + 1];
+                diagnosisIDs[j + 1] = tempId;
+            }
+        }
+    }
+
+    int diagnosisLimit = Math.min(5, uniqueDiagnosisCount);
+    for (int i = 0; i < diagnosisLimit; i++) {
+        report.append(String.format("  - %s: %d treatments\n", diagnosisIDs[i], diagnosisCounts[i]));
+    }
+    if (uniqueDiagnosisCount == 0) {
+        report.append("  (No data available)\n");
+    }
+
+    // DIAGNOSIS HISTOGRAM
+    if (diagnosisLimit > 0) {
+        report.append("\nDIAGNOSIS DISTRIBUTION:\n");
+        report.append("----------------------------------------------------\n");
+        int[] topCounts = new int[diagnosisLimit];
+        String[] topLabels = new String[diagnosisLimit];
+        for (int i = 0; i < diagnosisLimit; i++) {
+            topCounts[i] = diagnosisCounts[i];
+            topLabels[i] = diagnosisIDs[i];
+        }
+        report.append(generateHistogram(topCounts, topLabels));
+    }
+
+    report.append("\n====================================================\n");
+    report.append("                 END OF REPORT                  \n");
+    report.append("====================================================\n");
+
+    return report.toString();
+}
+
+// Keep your existing histogram generator
+private String generateHistogram(int[] values, String[] labels) {
+    StringBuilder histogram = new StringBuilder();
+    
+    if (values.length == 0 || values.length != labels.length) {
+        return "No data available for histogram\n";
+    }
+    
+    // Find maximum value for scaling
+    int maxValue = 0;
+    for (int value : values) {
+        if (value > maxValue) maxValue = value;
+    }
+    
+    if (maxValue == 0) {
+        return "No data available for histogram\n";
+    }
+    
+    // Scale to fit in 30 characters width
+    final int MAX_WIDTH = 30;
+    
+    for (int i = 0; i < values.length; i++) {
+        int barLength = maxValue > 0 ? (int) ((double) values[i] / maxValue * MAX_WIDTH) : 0;
+        String bar = new String(new char[barLength]).replace('\0', '*');
+        
+        // Format label (truncate if too long)
+        String label = labels[i];
+        if (label.length() > 12) {
+            label = label.substring(0, 9) + "...";
+        }
+        
+        histogram.append(String.format("%-12s | %-30s | %3d\n", 
+            label, bar, values[i]));
+    }
+    
+    return histogram.toString();
+}
+    
 }

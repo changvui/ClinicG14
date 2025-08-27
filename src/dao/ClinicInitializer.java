@@ -246,7 +246,13 @@ public class ClinicInitializer {
         System.out.println("Simulating a large, hardcoded prescription history for Jan-Aug 2025...");
         try {
             // --- Data pools for creating realistic, random history ---
-            String[] patientIDs = {"P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", "P010"};
+            String[] patientIDs = {
+                "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", "P010",
+                "P011", "P012", "P013", "P014", "P015", "P016", "P017", "P018", "P019", "P020",
+                "P021", "P022", "P023", "P024", "P025", "P026", "P027", "P028", "P029", "P030",
+                "P031", "P032", "P033", "P034", "P035", "P036", "P037", "P038", "P039", "P040",
+                "P041", "P042", "P043", "P044", "P045", "P046", "P047", "P048", "P049", "P050"
+            };
             String[] doctorIDs = {"D101", "D201", "D301", "D401", "D501", "D102", "D202", "D302"};
             String[] diagnosisTemplateIDs = {"DIAG01", "DIAG02", "DIAG03", "DIAG04", "DIAG05", "DIAG06"};
             String[] sickTypes = {"Acute", "Chronic", "Follow-up"};
@@ -255,32 +261,32 @@ public class ClinicInitializer {
             int year = 2025;
 
             // --- Hardcode 25 approved prescriptions for JANUARY 2025 ---
-            for (int i = 0; i < 25; i++) {
+            for (int i = 0; i < 40; i++) {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JANUARY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
 
             // --- Hardcode 20 approved prescriptions for FEBRUARY 2025 ---
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 45; i++) {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.FEBRUARY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
             
             // --- Hardcode 28 approved prescriptions for MARCH 2025 ---
-            for (int i = 0; i < 28; i++) {
+            for (int i = 0; i < 44; i++) {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.MARCH, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
 
             // --- Hardcode 23 approved prescriptions for APRIL 2025 ---
-            for (int i = 0; i < 23; i++) {
+            for (int i = 0; i < 42; i++) {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.APRIL, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
             
             // --- Hardcode 26 approved prescriptions for MAY 2025 ---
-            for (int i = 0; i < 26; i++) {
+            for (int i = 0; i < 46; i++) {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.MAY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
 
             // --- Hardcode 21 approved prescriptions for JUNE 2025 ---
-            for (int i = 0; i < 21; i++) {
+            for (int i = 0; i < 31; i++) {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JUNE, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
             
@@ -290,7 +296,7 @@ public class ClinicInitializer {
             }
             
             // --- Hardcode 22 approved prescriptions for AUGUST 2025 ---
-            for (int i = 0; i < 22; i++) {
+            for (int i = 0; i < 27; i++) {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.AUGUST, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
 
@@ -350,6 +356,102 @@ public class ClinicInitializer {
             treatmentControl.addDiagnosisTemplate("DIAG04", "Tension Headache", "Mild to moderate pain in the head, often described as a tight band. Suggest pain relievers.");
             treatmentControl.addDiagnosisTemplate("DIAG05", "Migraine", "Severe, recurring headache, often accompanied by nausea and light sensitivity.");
             treatmentControl.addDiagnosisTemplate("DIAG06", "Indigestion", "Discomfort in the upper abdomen, often after eating. Recommend antacids.");
+            treatmentControl.addDiagnosisTemplate("DIAG07", "Allergic Rhinitis", "Runny nose, sneezing, and congestion caused by allergens. Suggest antihistamines.");
+            treatmentControl.addDiagnosisTemplate("DIAG08", "Asthma Attack", "Narrowing of airways causing wheezing and shortness of breath. Requires inhaler use.");
+            treatmentControl.addDiagnosisTemplate("DIAG09", "Bronchitis", "Inflammation of the bronchial tubes, leading to cough and mucus. Suggest fluids and rest.");
+            treatmentControl.addDiagnosisTemplate("DIAG10", "Pneumonia", "Lung infection causing cough, fever, and breathing difficulty. Antibiotics may be needed.");
+            treatmentControl.addDiagnosisTemplate("DIAG11", "Gastritis", "Stomach lining inflammation causing pain and nausea. Avoid spicy food and use antacids.");
+            treatmentControl.addDiagnosisTemplate("DIAG12", "Food Poisoning", "Nausea, vomiting, and diarrhea caused by contaminated food. Recommend fluids and rest.");
+            treatmentControl.addDiagnosisTemplate("DIAG13", "Constipation", "Difficulty passing stools. Suggest high fiber diet and hydration.");
+            treatmentControl.addDiagnosisTemplate("DIAG14", "Diarrhea", "Frequent loose stools. Risk of dehydration. Recommend oral rehydration salts.");
+            treatmentControl.addDiagnosisTemplate("DIAG15", "Acid Reflux", "Burning sensation in the chest after eating. Suggest antacids and lifestyle changes.");
+            treatmentControl.addDiagnosisTemplate("DIAG16", "Urinary Tract Infection", "Burning sensation during urination, frequent urge to urinate. Needs antibiotics.");
+            treatmentControl.addDiagnosisTemplate("DIAG17", "Kidney Stones", "Severe pain in lower back or side. May require pain relief or medical removal.");
+            treatmentControl.addDiagnosisTemplate("DIAG18", "Hypertension", "High blood pressure often without symptoms. Recommend monitoring and lifestyle change.");
+            treatmentControl.addDiagnosisTemplate("DIAG19", "Hypotension", "Low blood pressure causing dizziness and fainting. Suggest hydration and rest.");
+            treatmentControl.addDiagnosisTemplate("DIAG20", "Diabetes (Type 2)", "High blood sugar levels. Recommend lifestyle changes and possible medication.");
+            treatmentControl.addDiagnosisTemplate("DIAG21", "Diabetes (Type 1)", "Insufficient insulin production. Requires insulin therapy.");
+            treatmentControl.addDiagnosisTemplate("DIAG22", "Anemia", "Low red blood cell count causing fatigue. Iron supplements may be required.");
+            treatmentControl.addDiagnosisTemplate("DIAG23", "Dehydration", "Loss of body fluids leading to weakness and dizziness. Recommend oral rehydration.");
+            treatmentControl.addDiagnosisTemplate("DIAG24", "Heat Exhaustion", "Weakness, heavy sweating, and fainting due to high temperatures. Cool down immediately.");
+            treatmentControl.addDiagnosisTemplate("DIAG25", "Heat Stroke", "Severe overheating causing confusion and collapse. Requires emergency care.");
+            treatmentControl.addDiagnosisTemplate("DIAG26", "Chickenpox", "Viral infection with itchy blisters. Supportive care and avoid scratching.");
+            treatmentControl.addDiagnosisTemplate("DIAG27", "Measles", "Viral infection with fever, cough, and rash. Highly contagious, requires isolation.");
+            treatmentControl.addDiagnosisTemplate("DIAG28", "Mumps", "Swelling of salivary glands. Rest, fluids, and pain relievers recommended.");
+            treatmentControl.addDiagnosisTemplate("DIAG29", "Whooping Cough", "Severe coughing fits followed by a ‘whoop’ sound. Requires antibiotics.");
+            treatmentControl.addDiagnosisTemplate("DIAG30", "Tuberculosis", "Bacterial lung infection causing cough and weight loss. Needs long-term antibiotics.");
+            treatmentControl.addDiagnosisTemplate("DIAG31", "COVID-19", "Respiratory infection with cough, fever, and fatigue. May need isolation and antiviral therapy.");
+            treatmentControl.addDiagnosisTemplate("DIAG32", "Sinusitis", "Inflammation of sinuses causing facial pain and congestion. Suggest decongestants.");
+            treatmentControl.addDiagnosisTemplate("DIAG33", "Otitis Media", "Middle ear infection causing pain and fever. May require antibiotics.");
+            treatmentControl.addDiagnosisTemplate("DIAG34", "Conjunctivitis", "Red, itchy eyes caused by infection or allergy. Use eye drops or antihistamines.");
+            treatmentControl.addDiagnosisTemplate("DIAG35", "Eczema", "Chronic skin condition with dry, itchy patches. Use moisturizers and avoid triggers.");
+            treatmentControl.addDiagnosisTemplate("DIAG36", "Psoriasis", "Skin condition with red, scaly patches. May need topical or systemic treatment.");
+            treatmentControl.addDiagnosisTemplate("DIAG37", "Acne", "Clogged pores leading to pimples. Use topical treatments or antibiotics.");
+            treatmentControl.addDiagnosisTemplate("DIAG38", "Sunburn", "Skin damage due to UV rays. Apply soothing lotions and avoid sun exposure.");
+            treatmentControl.addDiagnosisTemplate("DIAG39", "Fungal Infection", "Itchy rash caused by fungus (athlete’s foot, ringworm). Use antifungal cream.");
+            treatmentControl.addDiagnosisTemplate("DIAG40", "Scabies", "Skin infestation by mites causing intense itching. Requires medicated cream.");
+            treatmentControl.addDiagnosisTemplate("DIAG41", "Depression", "Persistent sadness and lack of interest. Suggest counseling and possible medication.");
+            treatmentControl.addDiagnosisTemplate("DIAG42", "Anxiety Disorder", "Excessive worry and restlessness. Therapy or medication may be needed.");
+            treatmentControl.addDiagnosisTemplate("DIAG43", "Panic Attack", "Sudden intense fear with rapid heartbeat. Encourage relaxation techniques.");
+            treatmentControl.addDiagnosisTemplate("DIAG44", "Insomnia", "Difficulty falling or staying asleep. Suggest sleep hygiene and relaxation.");
+            treatmentControl.addDiagnosisTemplate("DIAG45", "Bipolar Disorder", "Mood swings between highs and lows. Requires medical treatment.");
+            treatmentControl.addDiagnosisTemplate("DIAG46", "Schizophrenia", "Mental disorder with distorted thinking and hallucinations. Needs antipsychotics.");
+            treatmentControl.addDiagnosisTemplate("DIAG47", "PTSD", "Anxiety after traumatic events. Therapy and medication may be required.");
+            treatmentControl.addDiagnosisTemplate("DIAG48", "Dementia", "Decline in memory and thinking skills. Supportive care and medication available.");
+            treatmentControl.addDiagnosisTemplate("DIAG49", "Alzheimer Disease", "Progressive brain disorder causing memory loss. Supportive treatment only.");
+            treatmentControl.addDiagnosisTemplate("DIAG50", "Parkinson Disease", "Nervous system disorder causing tremors and stiffness. Requires medication.");
+            treatmentControl.addDiagnosisTemplate("DIAG51", "Epilepsy", "Seizure disorder. Requires anticonvulsant medication.");
+            treatmentControl.addDiagnosisTemplate("DIAG52", "Stroke", "Brain damage due to interrupted blood flow. Emergency treatment required.");
+            treatmentControl.addDiagnosisTemplate("DIAG53", "Heart Attack", "Blocked blood flow to the heart muscle. Emergency treatment required.");
+            treatmentControl.addDiagnosisTemplate("DIAG54", "Arrhythmia", "Irregular heartbeat. May need medication or pacemaker.");
+            treatmentControl.addDiagnosisTemplate("DIAG55", "Heart Failure", "Weak heart unable to pump effectively. Lifestyle changes and medication needed.");
+            treatmentControl.addDiagnosisTemplate("DIAG56", "Obesity", "Excess body fat increasing health risks. Recommend diet and exercise.");
+            treatmentControl.addDiagnosisTemplate("DIAG57", "Hyperthyroidism", "Overactive thyroid causing weight loss and anxiety. Requires medication.");
+            treatmentControl.addDiagnosisTemplate("DIAG58", "Hypothyroidism", "Underactive thyroid causing fatigue and weight gain. Needs hormone therapy.");
+            treatmentControl.addDiagnosisTemplate("DIAG59", "Vitamin D Deficiency", "Lack of vitamin D causing bone pain. Recommend supplements and sunlight.");
+            treatmentControl.addDiagnosisTemplate("DIAG60", "Vitamin B12 Deficiency", "Causes anemia and neurological issues. Requires supplements.");
+            treatmentControl.addDiagnosisTemplate("DIAG61", "Scurvy", "Vitamin C deficiency causing gum bleeding. Recommend citrus fruits.");
+            treatmentControl.addDiagnosisTemplate("DIAG62", "Rickets", "Bone softening in children due to vitamin D deficiency. Needs supplements.");
+            treatmentControl.addDiagnosisTemplate("DIAG63", "Osteoporosis", "Weak and brittle bones. Recommend calcium and exercise.");
+            treatmentControl.addDiagnosisTemplate("DIAG64", "Arthritis", "Joint inflammation causing pain and stiffness. Pain relievers may help.");
+            treatmentControl.addDiagnosisTemplate("DIAG65", "Gout", "Sudden joint pain due to uric acid buildup. Suggest dietary changes.");
+            treatmentControl.addDiagnosisTemplate("DIAG66", "Carpal Tunnel Syndrome", "Nerve compression in the wrist causing pain and numbness. May need splint.");
+            treatmentControl.addDiagnosisTemplate("DIAG67", "Tendonitis", "Inflammation of tendons causing pain. Rest and anti-inflammatory drugs help.");
+            treatmentControl.addDiagnosisTemplate("DIAG68", "Sciatica", "Nerve pain radiating down the leg. Rest and physiotherapy recommended.");
+            treatmentControl.addDiagnosisTemplate("DIAG69", "Herniated Disc", "Spinal disc displacement causing back pain. May need surgery.");
+            treatmentControl.addDiagnosisTemplate("DIAG70", "Fracture", "Broken bone requiring immobilization or surgery.");
+            treatmentControl.addDiagnosisTemplate("DIAG71", "Dislocation", "Bone out of joint position. Needs reduction by medical staff.");
+            treatmentControl.addDiagnosisTemplate("DIAG72", "Whiplash", "Neck injury due to sudden jerk. Rest and pain relievers recommended.");
+            treatmentControl.addDiagnosisTemplate("DIAG73", "Burn (First Degree)", "Red skin without blisters. Cool water treatment.");
+            treatmentControl.addDiagnosisTemplate("DIAG74", "Burn (Second Degree)", "Blistered, painful skin. Medical care required.");
+            treatmentControl.addDiagnosisTemplate("DIAG75", "Burn (Third Degree)", "Severe skin damage affecting deeper tissues. Emergency care needed.");
+            treatmentControl.addDiagnosisTemplate("DIAG76", "Frostbite", "Skin and tissue freezing due to cold exposure. Warm gradually.");
+            treatmentControl.addDiagnosisTemplate("DIAG77", "Hypothermia", "Dangerously low body temperature. Emergency warming required.");
+            treatmentControl.addDiagnosisTemplate("DIAG78", "Snake Bite", "Venom injection causing pain and swelling. Emergency antivenom required.");
+            treatmentControl.addDiagnosisTemplate("DIAG79", "Dog Bite", "Puncture wounds risk infection. May need rabies vaccination.");
+            treatmentControl.addDiagnosisTemplate("DIAG80", "Bee Sting", "Localized pain and swelling. Severe allergy may require epinephrine.");
+            treatmentControl.addDiagnosisTemplate("DIAG81", "Anaphylaxis", "Severe allergic reaction. Emergency epinephrine required.");
+            treatmentControl.addDiagnosisTemplate("DIAG82", "Poisoning", "Ingestion of toxic substance. Emergency care required.");
+            treatmentControl.addDiagnosisTemplate("DIAG83", "Lead Poisoning", "Chronic exposure causes developmental issues. Requires chelation therapy.");
+            treatmentControl.addDiagnosisTemplate("DIAG84", "Carbon Monoxide Poisoning", "Headache, dizziness, and confusion. Requires oxygen therapy.");
+            treatmentControl.addDiagnosisTemplate("DIAG85", "Alcohol Intoxication", "Impaired judgment and coordination. Rest and hydration required.");
+            treatmentControl.addDiagnosisTemplate("DIAG86", "Drug Overdose", "Toxic reaction to excessive drug use. Emergency care required.");
+            treatmentControl.addDiagnosisTemplate("DIAG87", "Appendicitis", "Severe abdominal pain needing surgical removal of appendix.");
+            treatmentControl.addDiagnosisTemplate("DIAG88", "Gallstones", "Hardened deposits in gallbladder causing pain. May require surgery.");
+            treatmentControl.addDiagnosisTemplate("DIAG89", "Pancreatitis", "Inflammation of pancreas causing abdominal pain. Needs hospitalization.");
+            treatmentControl.addDiagnosisTemplate("DIAG90", "Hepatitis A", "Viral liver infection spread by food. Usually self-limiting.");
+            treatmentControl.addDiagnosisTemplate("DIAG91", "Hepatitis B", "Viral liver infection spread by blood. May become chronic.");
+            treatmentControl.addDiagnosisTemplate("DIAG92", "Hepatitis C", "Viral liver infection causing chronic damage. Needs antiviral drugs.");
+            treatmentControl.addDiagnosisTemplate("DIAG93", "Cirrhosis", "Chronic liver damage due to alcohol or hepatitis. Supportive care required.");
+            treatmentControl.addDiagnosisTemplate("DIAG94", "Jaundice", "Yellowing of skin due to liver issues. Treat underlying cause.");
+            treatmentControl.addDiagnosisTemplate("DIAG95", "Cholecystitis", "Gallbladder inflammation. May need surgery.");
+            treatmentControl.addDiagnosisTemplate("DIAG96", "Irritable Bowel Syndrome", "Chronic digestive disorder with cramps and bloating. Lifestyle management needed.");
+            treatmentControl.addDiagnosisTemplate("DIAG97", "Crohn Disease", "Inflammatory bowel disease affecting intestines. Requires medication.");
+            treatmentControl.addDiagnosisTemplate("DIAG98", "Ulcerative Colitis", "Inflammatory bowel disease causing bloody diarrhea. Needs treatment.");
+            treatmentControl.addDiagnosisTemplate("DIAG99", "Peptic Ulcer", "Sores in stomach lining causing pain. Antacids and antibiotics recommended.");
+            treatmentControl.addDiagnosisTemplate("DIAG100", "Hemorrhoids", "Swollen veins in rectum causing pain and bleeding. Suggest high fiber diet.");
+
+
         } catch (Exception e) {
             System.out.println("Error loading sample diagnoses: " + e.getMessage());
         }
