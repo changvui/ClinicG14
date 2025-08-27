@@ -172,40 +172,88 @@ public class MedicalTreatmentControl {
     }
     
     public String generatePatientHistoryReport(String patientID) {
-        QueueInterface<MedicalTreatment> treatments = searchTreatmentByPatientId(patientID);
-        
-        if (treatments.isEmpty()) {
-            // We can't confirm if the patient exists, only if they have history.
-            return "No treatment history found for patient ID: " + patientID;
-        }
-
-        StringBuilder report = new StringBuilder();
-        MedicalTreatment[] treatmentArray = treatments.toArray(new MedicalTreatment[0]);
-
-        report.append("\n====================================================\n");
-        report.append("           PATIENT TREATMENT HISTORY REPORT         \n");
-        report.append("====================================================\n");
-        report.append(String.format("Patient ID: %s\n", patientID));
-        report.append(String.format("Total Treatments: %d\n", treatmentArray.length));
-        report.append(String.format("Report Generated: %s\n", new Date()));
-        report.append("----------------------------------------------------\n\n");
-
-        for (MedicalTreatment t : treatmentArray) {
-            report.append(String.format("Treatment ID: %s   Date: %s\n", t.getTreatmentID(), t.getCreatedDate()));
-            report.append(String.format("  Doctor ID: %s\n", t.getDoctorID()));
-            report.append(String.format("  Sickness:  %s\n", t.getPatientSicknessDescription()));
-            report.append(String.format("  Diagnosis: %s\n", t.getDiagnosisDescription()));
-            report.append(String.format("  Prescribed: %s (Qty: %d)\n", t.getMedicationID(), t.getDispensedQuantity()));
-            report.append("----------------------------------------------------\n");
-        }
-        report.append("                       END OF REPORT                  \n");
-        report.append("====================================================\n");
-
-        return report.toString();
+    QueueInterface<MedicalTreatment> treatments = searchTreatmentByPatientId(patientID);
+    
+    if (treatments.isEmpty()) {
+        return "No treatment history found for patient ID: " + patientID;
     }
 
-// NEW: Compact histogram generator for perfect formatting
-// SIMPLER FIX: Just adjust the string formatting
+    StringBuilder report = new StringBuilder();
+    MedicalTreatment[] treatmentArray = treatments.toArray(new MedicalTreatment[0]);
+
+    // Professional Header - FIXED WIDTH
+    report.append("===================================================================\n");
+    report.append("|                     PATIENT TREATMENT HISTORY                    |\n");
+    report.append("|==================================================================|\n");
+    report.append("| Patient ID: ").append(String.format("%-53s", patientID)).append("|\n");
+    report.append("| Generated: ").append(String.format("%-54s", new Date())).append("|\n");
+    report.append("===================================================================\n\n");
+
+    // Treatment Summary
+    report.append("TREATMENT SUMMARY:\n");
+    report.append("===================================================================\n");
+    report.append("Total Treatments: ").append(treatmentArray.length).append("\n\n");
+
+    // Treatment Details Table
+    report.append("DETAILED TREATMENT HISTORY:\n");
+    report.append("===================================================================\n");
+    report.append(String.format("%-12s %-12s %-13s %-12s\n", 
+        "TreatmentID", "Date", "Doctor ID", "Medication"));
+    report.append("===================================================================\n");
+
+    for (MedicalTreatment t : treatmentArray) {
+        String shortDate = t.getCreatedDate().toString().substring(0, 10);
+        report.append(String.format("%-12s %-12s %-13s  %-12s\n",
+            t.getTreatmentID(),
+            shortDate,
+            t.getDoctorID(),
+            t.getMedicationID()));
+    }
+
+    // Statistics Section
+    report.append("\nSTATISTICS:\n");
+    report.append("===================================================================\n");
+    
+    // Count by sickness type 
+    int acute = 0, chronic = 0, followup = 0;
+    for (MedicalTreatment t : treatmentArray) {
+        String sickType = t.getSickType().toLowerCase().trim();
+        
+        if (sickType.contains("acute")) {
+            acute++;
+        } 
+        else if (sickType.contains("chronic")) {
+            chronic++;
+        }
+        else if (sickType.contains("follow")) {
+            followup++;
+        }
+        else {
+            // If none match, assume it's follow-up
+            followup++;
+        }
+    }
+    
+    report.append("Acute Treatments:    ").append(acute).append("\n");
+    report.append("Chronic Treatments:  ").append(chronic).append("\n");
+    report.append("Follow-up Visits:    ").append(followup).append("\n\n");
+
+    // SICKNESS TYPE HISTOGRAM
+    report.append("SICKNESS TYPE DISTRIBUTION:\n");
+    report.append("===================================================================\n");
+    report.append(generateCompactHistogram(new int[]{acute, chronic, followup}, 
+                                         new String[]{"Acute", "Chronic", "Follow-up"}));
+    report.append("\n");
+
+    // Footer
+    report.append("===================================================================\n");
+    report.append("END OF REPORT - ").append(new Date()).append("\n");
+    report.append("===================================================================\n");
+
+    return report.toString();
+}
+
+// Compact histogram generator
 private String generateCompactHistogram(int[] values, String[] labels) {
     StringBuilder histogram = new StringBuilder();
     
@@ -230,7 +278,7 @@ private String generateCompactHistogram(int[] values, String[] labels) {
         int barLength = maxValue > 0 ? (int) ((double) values[i] / maxValue * MAX_WIDTH) : 0;
         String bar = new String(new char[barLength]).replace('\0', '*');
         
-        // CHANGED: Adjusted formatting to match header width
+        // Adjusted formatting to match header width
         histogram.append(String.format("%-10s | %-30s | %3d\n", 
             labels[i], bar, values[i]));
     }
