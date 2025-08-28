@@ -9,16 +9,15 @@ import java.util.Date;
 
 public class MedicalTreatmentControl {
 
-    private QueueInterface<MedicalTreatment> treatmentHistory;
-    private QueueInterface<DiagnosisTemplate> diagnosisTemplates;
-    private PharmacyControl pharmacyControl;
+    // Declare Collection ADT objects like the sample
+    private final QueueInterface<MedicalTreatment> treatmentHistory = new LinkedQueue<>();
+    private final QueueInterface<DiagnosisTemplate> diagnosisTemplates = new LinkedQueue<>();
+    private final PharmacyControl pharmacyControl;
 
     public MedicalTreatmentControl(PharmacyControl pharmacyControl) {
-        this.treatmentHistory = new LinkedQueue<>();
-        this.diagnosisTemplates = new LinkedQueue<>();
         this.pharmacyControl = pharmacyControl;
     }
-
+    
     // --- Template Management Methods (Correct) ---
     public void addDiagnosisTemplate(String id, String name, String desc) {
         diagnosisTemplates.enqueue(new DiagnosisTemplate(id, name, desc));
@@ -120,19 +119,24 @@ public class MedicalTreatmentControl {
 
     // DELETE (Now uses treatmentID as the key)
     public boolean deleteTreatment(String treatmentID) {
-        MedicalTreatment treatmentToDelete = findTreatmentById(treatmentID);
-        if (treatmentToDelete != null) {
-            QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
-            while (!treatmentHistory.isEmpty()) {
-                MedicalTreatment current = treatmentHistory.dequeue();
-                if (!current.getTreatmentID().equals(treatmentID)) {
-                    tempQueue.enqueue(current);
-                }
+        boolean found = false;
+        QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
+
+        while (!treatmentHistory.isEmpty()) {
+            MedicalTreatment current = treatmentHistory.dequeue();
+            if (!current.getTreatmentID().equalsIgnoreCase(treatmentID)) {
+                tempQueue.enqueue(current);
+            } else {
+                found = true;
             }
-            this.treatmentHistory = tempQueue;
-            return true;
         }
-        return false;
+
+        // refill the original queue instead of reassigning
+        while (!tempQueue.isEmpty()) {
+            treatmentHistory.enqueue(tempQueue.dequeue());
+        }
+
+        return found;
     }
 
     // --- Helper Methods ---
