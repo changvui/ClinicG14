@@ -314,36 +314,77 @@ public class PharmacyControl {
     Prescription[] allApproved = new Prescription[approvedPrescriptions.size()];
     allApproved = approvedPrescriptions.toArray(allApproved);
 
-    // --- Data structures for aggregation (This part is unchanged) ---
+    // --- Data structures for aggregation ---
     String[][] medAggData = new String[medicationStock.size()][5];
     int medCount = 0;
     String[][] typeAggData = new String[medicationStock.size()][2];
     int typeCount = 0;
     int totalQtyDispensed = 0;
 
-    // --- 2. Main Aggregation Loop (This part is unchanged) ---
+        
+    // --- 2. Main Aggregation Loop ---
     for (Prescription p : allApproved) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(p.getApprovalDate());
+        
         if (cal.get(Calendar.MONTH) + 1 == month && cal.get(Calendar.YEAR) == year) {
-            // ... entire aggregation logic remains the same ...
+            
+            // =================================================================
+         
+            totalQtyDispensed += p.getQuantity();
+            Pharmacy med = findMedicationById(p.getMedicationID());
+            if (med == null) continue;
+
+            // Aggregate by Medication
+            boolean medFound = false;
+            for (int i = 0; i < medCount; i++) {
+                if (medAggData[i][0].equals(p.getMedicationID())) {
+                    medAggData[i][2] = String.valueOf(Integer.parseInt(medAggData[i][2]) + 1);
+                    medAggData[i][3] = String.valueOf(Integer.parseInt(medAggData[i][3]) + p.getQuantity());
+                    medFound = true;
+                    break;
+                }
+            }
+            if (!medFound) {
+                medAggData[medCount][0] = med.getMedicationID();
+                medAggData[medCount][1] = med.getMedicationName();
+                medAggData[medCount][2] = "1"; // Times dispensed
+                medAggData[medCount][3] = String.valueOf(p.getQuantity()); // Total quantity
+                medAggData[medCount][4] = String.format("RM %.2f", med.getMedicationPrice());
+                medCount++; // CRITICAL: This now gets incremented
+            }
+
+            // Aggregate by Type
+            boolean typeFound = false;
+            for (int i = 0; i < typeCount; i++) {
+                if (typeAggData[i][0].equalsIgnoreCase(med.getMedicationType())) {
+                    typeAggData[i][1] = String.valueOf(Integer.parseInt(typeAggData[i][1]) + 1);
+                    typeFound = true;
+                    break;
+                }
+            }
+            if (!typeFound) {
+                typeAggData[typeCount][0] = med.getMedicationType();
+                typeAggData[typeCount][1] = "1";
+                typeCount++;
+            }
+            // =================================================================
         }
     }
+    
+    // Now that medCount is > 0, this condition will be false and the report will generate.
     if(medCount == 0) return null;
 
-    // --- 3. Prepare Final Data Structures ---
+    // --- The rest of your method is correct ---
     String[][] tableData = new String[medCount][5];
     System.arraycopy(medAggData, 0, tableData, 0, medCount);
 
     String[][] finalTypeData = new String[typeCount][2];
     System.arraycopy(typeAggData, 0, finalTypeData, 0, typeCount);
 
-    // --- 4. Sort and Prepare Chart Data ---
-    // MODIFICATION: Replaced Arrays.sort() with calls to a manual bubble sort helper method.
-    bubbleSortStringArray(tableData, 3, true, true); // Sort by column 3 (Quantity), numeric, descending
-    bubbleSortStringArray(finalTypeData, 1, true, true); // Sort by column 1 (Count), numeric, descending
+    bubbleSortStringArray(tableData, 3, true, true);
+    bubbleSortStringArray(finalTypeData, 1, true, true);
 
-    // --- 5. Prepare chart and insight data (This part is unchanged) ---
     int limitQty = Math.min(5, tableData.length);
     String[][] topDispensedByQtyChartData = new String[limitQty][2];
     for (int i = 0; i < limitQty; i++) {
@@ -361,7 +402,6 @@ public class PharmacyControl {
     String highestDemand = tableData[0][1] + " (" + tableData[0][3] + " units)";
     String mostPrescribedType = finalTypeData[0][0] + " (" + finalTypeData[0][1] + " times)";
 
-    // --- 6. Return the complete data package ---
     return new DispensingReportData(tableData, topDispensedByQtyChartData, topDispensedByTypeChartData, medCount, totalQtyDispensed, highestDemand, mostPrescribedType);
 }
    
@@ -628,5 +668,6 @@ public class PharmacyControl {
         return displayData;
     }
     
+     
     
 }
