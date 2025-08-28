@@ -295,10 +295,7 @@ public class ClinicInitializer {
                 createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JULY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
             }
             
-            // --- Hardcode 22 approved prescriptions for AUGUST 2025 ---
-            for (int i = 0; i < 27; i++) {
-                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.AUGUST, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
-            }
+           
 
             // --- Add one case that gets put on hold for testing ---
             treatmentControl.createTreatment("P005", "D401", "Recurring severe headaches.", "Chronic", "DIAG05", "M007", 500);
