@@ -1,7 +1,9 @@
 /*
  * Control Class: PharmacyControl.java
+ * Author: Tiong Chang Vui
  * Manages the business logic for the pharmacy module.
  */
+
 package control;
 
 import adt.LinkedQueue;
